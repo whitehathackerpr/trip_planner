@@ -4,7 +4,6 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-
 const Home = () => {
   const navigate = useNavigate();
   const [tripDetails, setTripDetails] = useState({
@@ -28,7 +27,6 @@ const Home = () => {
     setError("");
 
     try {
-      // Validate inputs
       if (
         !tripDetails.currentLocation ||
         !tripDetails.pickupLocation ||
@@ -39,7 +37,6 @@ const Home = () => {
         return;
       }
 
-      // Fetch coordinates from Mapbox Geocoding API
       const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
       const { data: currentData } = await axios.get(
@@ -67,7 +64,6 @@ const Home = () => {
         return;
       }
 
-      // Navigate to the results page with state
       navigate("/results", {
         state: {
           ...tripDetails,
@@ -83,16 +79,19 @@ const Home = () => {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
-
-      /**Navbar */
+    <div
+      className="bg-[#FFFDD0] min-h-screen flex flex-col items-center justify-center p-6"
+    >
       <Navbar />
 
-      <div className="bg-white text-black p-8 rounded-lg shadow-xl w-full max-w-lg">
-        <h1 className="text-3xl font-bold mb-6 text-center">Trip Planner</h1>
+      <div className="bg-white text-black p-10 rounded-2xl shadow-xl w-full max-w-lg">
+        <h1 className="text-4xl font-bold mb-8 text-center">Trip Planner</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="currentLocation" className="block text-lg font-medium mb-2">
+            <label
+              htmlFor="currentLocation"
+              className="block text-lg font-medium mb-2"
+            >
               Current Location:
             </label>
             <input
@@ -101,12 +100,16 @@ const Home = () => {
               name="currentLocation"
               value={tripDetails.currentLocation}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg"
+              className="w-full p-4 bg-silver text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your current location"
+              autoComplete="off"
             />
           </div>
           <div>
-            <label htmlFor="pickupLocation" className="block text-lg font-medium mb-2">
+            <label
+              htmlFor="pickupLocation"
+              className="block text-lg font-medium mb-2"
+            >
               Pickup Location:
             </label>
             <input
@@ -115,12 +118,16 @@ const Home = () => {
               name="pickupLocation"
               value={tripDetails.pickupLocation}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg"
+              className="w-full p-4 bg-silver text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter the pickup location"
+              autoComplete="off"
             />
           </div>
           <div>
-            <label htmlFor="dropoffLocation" className="block text-lg font-medium mb-2">
+            <label
+              htmlFor="dropoffLocation"
+              className="block text-lg font-medium mb-2"
+            >
               Dropoff Location:
             </label>
             <input
@@ -129,12 +136,16 @@ const Home = () => {
               name="dropoffLocation"
               value={tripDetails.dropoffLocation}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg"
+              className="w-full p-4 bg-silver text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter the dropoff location"
+              autoComplete="off"
             />
           </div>
           <div>
-            <label htmlFor="cycleHours" className="block text-lg font-medium mb-2">
+            <label
+              htmlFor="cycleHours"
+              className="block text-lg font-medium mb-2"
+            >
               Current Cycle Hours (Hrs):
             </label>
             <input
@@ -143,8 +154,9 @@ const Home = () => {
               name="cycleHours"
               value={tripDetails.cycleHours}
               onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg"
+              className="w-full p-4 bg-silver text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter hours used"
+              autoComplete="off"
             />
           </div>
           {error && (
@@ -152,16 +164,14 @@ const Home = () => {
           )}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white p-3 rounded-lg font-medium hover:bg-blue-600 transition duration-300 ease-in-out"
+            className="w-full bg-blue-500 text-white p-4 rounded-lg font-medium hover:bg-blue-600 transition duration-300 ease-in-out"
           >
             Plan Trip
           </button>
         </form>
       </div>
 
-      /**footer */
       <Footer />
-      
     </div>
   );
 };
