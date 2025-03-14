@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import '../App.css';
+import SignIn from "../pages/SignIn";
+
+
 
 const Home = () => {
   const navigate = useNavigate();
@@ -170,7 +174,7 @@ const Home = () => {
           </button>
         </form>
       </div>
-
+      <SignIn />
       <Footer />
     </div>
   );
