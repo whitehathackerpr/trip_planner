@@ -12,6 +12,8 @@ const Navbar = () => {
                     
                     {/* Link to results page */}
                     <Link to="/results" className="hover:text-gray">RESULTS</Link>
+                    {/*Link to sign in page*/}
+                    <Link to = "/SignIn" className='hover:text-gray'>SIGN IN</Link>
                 </div>
             </div>
         </nav>
