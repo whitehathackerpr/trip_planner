@@ -1,177 +1,211 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import { FaMapMarkerAlt, FaTruck, FaCalendarAlt, FaSpinner, FaArrowRight, FaClipboardList } from "react-icons/fa";
+import { submitTripDetails } from "../utils/api";
 
 const Home = () => {
   const navigate = useNavigate();
   const [tripDetails, setTripDetails] = useState({
-    currentLocation: "",
-    pickupLocation: "",
-    dropoffLocation: "",
-    cycleHours: "",
+    current_location: "",
+    pickup_location: "",
+    dropoff_location: "",
+    cycle_hours: "11"
   });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setTripDetails((prev) => ({
+    setTripDetails(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+    
+    // Validate form
+    if (!tripDetails.current_location || !tripDetails.pickup_location || !tripDetails.dropoff_location) {
+      setError("Please fill in all location fields");
+      return;
+    }
+    
+    setLoading(true);
     try {
-      if (
-        !tripDetails.currentLocation ||
-        !tripDetails.pickupLocation ||
-        !tripDetails.dropoffLocation ||
-        !tripDetails.cycleHours
-      ) {
-        setError("All fields are required.");
-        return;
-      }
-
-      const mapboxToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-
-      const { data: currentData } = await axios.get(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          tripDetails.currentLocation
-        )}.json?access_token=${mapboxToken}`
-      );
-      const { data: pickupData } = await axios.get(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          tripDetails.pickupLocation
-        )}.json?access_token=${mapboxToken}`
-      );
-      const { data: dropoffData } = await axios.get(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          tripDetails.dropoffLocation
-        )}.json?access_token=${mapboxToken}`
-      );
-
-      const currentCoordinates = currentData.features[0]?.center;
-      const pickupCoordinates = pickupData.features[0]?.center;
-      const dropoffCoordinates = dropoffData.features[0]?.center;
-
-      if (!currentCoordinates || !dropoffCoordinates || !pickupCoordinates) {
-        setError("Unable to fetch coordinates for one or more locations.");
-        return;
-      }
-
-      navigate("/results", {
+      const response = await submitTripDetails(tripDetails);
+      navigate("/results", { 
         state: {
           ...tripDetails,
-          currentCoordinates,
-          pickupCoordinates,
-          dropoffCoordinates,
-        },
+          routeData: response.data
+        }
       });
-    } catch (error) {
-      console.error("Error fetching coordinates:", error);
-      setError("An error occurred while fetching location data.");
+    } catch (err) {
+      console.error("Error submitting trip details:", err);
+      setError("Failed to plan trip. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      className="bg-[#FFFDD0] min-h-screen flex flex-col items-center justify-center p-6"
-    >
-      <Navbar />
-
-      <div className="bg-white text-black p-10 rounded-2xl shadow-xl w-full max-w-lg">
-        <h1 className="text-4xl font-bold mb-8 text-center">Trip Planner</h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label
-              htmlFor="currentLocation"
-              className="block text-lg font-medium mb-2"
-            >
-              Current Location:
-            </label>
-            <input
-              type="text"
-              id="currentLocation"
-              name="currentLocation"
-              value={tripDetails.currentLocation}
-              onChange={handleChange}
-              className="w-full p-4 bg-silver text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your current location"
-              autoComplete="off"
-            />
+    <div className="w-full max-w-full">
+      <h2 className="text-2xl font-bold mb-6">Plan Your Trip</h2>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-6 text-white">
+              <h2 className="text-2xl font-bold">Trip Planner</h2>
+              <p className="mt-1 opacity-90">Enter your trip details to get started</p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6">
+              {error && (
+                <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 text-red-700">
+                  <p>{error}</p>
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2 flex items-center">
+                    <FaMapMarkerAlt className="mr-2 text-blue-600" />
+                    Current Location
+                  </label>
+                  <input
+                    type="text"
+                    name="current_location"
+                    value={tripDetails.current_location}
+                    onChange={handleChange}
+                    className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Enter your current location"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2 flex items-center">
+                    <FaTruck className="mr-2 text-blue-600" />
+                    Pickup Location
+                  </label>
+                  <input
+                    type="text"
+                    name="pickup_location"
+                    value={tripDetails.pickup_location}
+                    onChange={handleChange}
+                    className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Enter pickup location"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2 flex items-center">
+                    <FaMapMarkerAlt className="mr-2 text-blue-600" />
+                    Dropoff Location
+                  </label>
+                  <input
+                    type="text"
+                    name="dropoff_location"
+                    value={tripDetails.dropoff_location}
+                    onChange={handleChange}
+                    className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Enter dropoff location"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-gray-700 text-sm font-bold mb-2 flex items-center">
+                    <FaCalendarAlt className="mr-2 text-blue-600" />
+                    Available Cycle Hours
+                  </label>
+                  <select
+                    name="cycle_hours"
+                    value={tripDetails.cycle_hours}
+                    onChange={handleChange}
+                    className="shadow-sm border border-gray-300 rounded-md w-full py-3 px-4 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  >
+                    <option value="11">11 hours (Standard)</option>
+                    <option value="8">8 hours (Short Cycle)</option>
+                    <option value="14">14 hours (Extended)</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center justify-center"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <FaSpinner className="animate-spin mr-2" />
+                      Planning Trip...
+                    </>
+                  ) : (
+                    <>
+                      Plan Trip
+                      <FaArrowRight className="ml-2" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
-          <div>
-            <label
-              htmlFor="pickupLocation"
-              className="block text-lg font-medium mb-2"
-            >
-              Pickup Location:
-            </label>
-            <input
-              type="text"
-              id="pickupLocation"
-              name="pickupLocation"
-              value={tripDetails.pickupLocation}
-              onChange={handleChange}
-              className="w-full p-4 bg-silver text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter the pickup location"
-              autoComplete="off"
-            />
+        </div>
+        
+        <div>
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 p-6 text-white">
+              <h2 className="text-xl font-bold">Features</h2>
+              <p className="mt-1 opacity-90">What our trip planner offers</p>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="flex">
+                <div className="flex-shrink-0 bg-blue-100 rounded-full p-3">
+                  <FaMapMarkerAlt className="text-blue-600" />
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-semibold text-blue-600">Optimized Routes</h4>
+                  <p className="text-sm text-gray-600">Find the most efficient routes for your trips</p>
+                </div>
+              </div>
+              
+              <div className="flex">
+                <div className="flex-shrink-0 bg-green-100 rounded-full p-3">
+                  <FaCalendarAlt className="text-green-600" />
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-semibold text-green-600">HOS Compliance</h4>
+                  <p className="text-sm text-gray-600">Stay compliant with hours of service regulations</p>
+                </div>
+              </div>
+              
+              <div className="flex">
+                <div className="flex-shrink-0 bg-purple-100 rounded-full p-3">
+                  <FaTruck className="text-purple-600" />
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-semibold text-purple-600">Rest Stop Planning</h4>
+                  <p className="text-sm text-gray-600">Automatically plan required rest stops</p>
+                </div>
+              </div>
+              
+              <div className="flex">
+                <div className="flex-shrink-0 bg-orange-100 rounded-full p-3">
+                  <FaClipboardList className="text-orange-600" />
+                </div>
+                <div className="ml-4">
+                  <h4 className="font-semibold text-blue-600">Track Logs</h4>
+                  <p className="text-sm text-gray-600">Generate and export ELD logs for your trips</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <label
-              htmlFor="dropoffLocation"
-              className="block text-lg font-medium mb-2"
-            >
-              Dropoff Location:
-            </label>
-            <input
-              type="text"
-              id="dropoffLocation"
-              name="dropoffLocation"
-              value={tripDetails.dropoffLocation}
-              onChange={handleChange}
-              className="w-full p-4 bg-silver text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter the dropoff location"
-              autoComplete="off"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="cycleHours"
-              className="block text-lg font-medium mb-2"
-            >
-              Current Cycle Hours (Hrs):
-            </label>
-            <input
-              type="number"
-              id="cycleHours"
-              name="cycleHours"
-              value={tripDetails.cycleHours}
-              onChange={handleChange}
-              className="w-full p-4 bg-silver text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter hours used"
-              autoComplete="off"
-            />
-          </div>
-          {error && (
-            <p className="text-red-500 text-sm text-center">{error}</p>
-          )}
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white p-4 rounded-lg font-medium hover:bg-blue-600 transition duration-300 ease-in-out"
-          >
-            Plan Trip
-          </button>
-        </form>
+        </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
